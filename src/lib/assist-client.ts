@@ -37,7 +37,7 @@ export async function streamAssist(
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
-    signal: signal ?? null,
+    ...(signal ? { signal } : {}),
   });
 
   if (!response.ok || !response.body) {
