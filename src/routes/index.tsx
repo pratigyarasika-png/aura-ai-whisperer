@@ -153,16 +153,57 @@ function ResearchWorkspace() {
   const [draftAccent, setDraftAccent] = useState(DEFAULT_ACCENT);
   const [query, setQuery] = useState("");
   const [statusIndex, setStatusIndex] = useState(0);
+  const [askMode, setAskMode] = useState<AskMode>("academic");
+  const [answer, setAnswer] = useState("");
+  const [answering, setAnswering] = useState(false);
+  const [answerError, setAnswerError] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     const savedTheme = window.localStorage.getItem("orbis-theme");
     const savedAccent = window.localStorage.getItem("orbis-accent");
+    const savedMode = window.localStorage.getItem(ASK_MODE_KEY);
     const nextTheme: Theme = savedTheme === "dark" ? "dark" : "light";
     const nextAccent = savedAccent && isHex(savedAccent) ? savedAccent : DEFAULT_ACCENT;
     setTheme(nextTheme);
     setAccent(nextAccent);
     setDraftAccent(nextAccent);
+    if (savedMode === "general" || savedMode === "academic") setAskMode(savedMode);
   }, []);
+
+  useEffect(() => () => abortRef.current?.abort(), []);
+
+  const chooseAskMode = (next: AskMode) => {
+    setAskMode(next);
+    window.localStorage.setItem(ASK_MODE_KEY, next);
+  };
+
+  const runGeneralAsk = async (prompt: string) => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+    setAnswering(true);
+    setAnswer("");
+    setAnswerError(null);
+    try {
+      await streamAssist(
+        {
+          mode: engineMode === "journal" || engineMode === "deep" ? "pro" : engineMode,
+          instruction:
+            "Answer the user's question as a helpful general-purpose assistant. Do not search or cite academic literature unless the user explicitly asks for it.",
+          question: prompt,
+        },
+        (delta) => setAnswer((value) => value + delta),
+        controller.signal,
+      );
+    } catch (error) {
+      if ((error as Error)?.name !== "AbortError") {
+        setAnswerError(error instanceof Error ? error.message : "The assistant could not answer right now.");
+      }
+    } finally {
+      setAnswering(false);
+    }
+  };
 
 
   useEffect(() => {
