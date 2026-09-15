@@ -578,27 +578,81 @@ function ResearchWorkspace() {
 
               })}
 
-              <form className="hub-core relative z-10 flex aspect-square w-[58%] max-w-[23rem] flex-col items-center justify-center rounded-full border border-primary/25 bg-card p-[9%] text-center shadow-2xl" onSubmit={(event) => {
+              <form className="hub-core relative z-10 flex aspect-square w-[64%] max-w-[23rem] flex-col items-center justify-center rounded-full border border-primary/25 bg-card p-[8%] text-center shadow-2xl sm:w-[58%] sm:p-[9%]" onSubmit={(event) => {
                   event.preventDefault();
-                  if (query.trim()) navigate({ to: "/search", search: { q: query.trim() } });
+                  const prompt = query.trim();
+                  if (!prompt) return;
+                  if (askMode === "academic") navigate({ to: "/search", search: { q: prompt } });
+                  else void runGeneralAsk(prompt);
                 }}>
-                <span className="mb-4 grid size-12 place-items-center rounded-full bg-primary text-primary-foreground shadow-lg"><WandSparkles className="size-5" /></span>
-                <label htmlFor="research-query" className="font-display text-base font-semibold sm:text-lg">Ask Orbis</label>
+                <span className="mb-2 grid size-10 place-items-center rounded-full bg-primary text-primary-foreground shadow-lg sm:mb-4 sm:size-12"><WandSparkles className="size-4 sm:size-5" /></span>
+                <label htmlFor="research-query" className="font-display text-sm font-semibold sm:text-lg">Ask Orbis</label>
                 <textarea
                   id="research-query"
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
-                  placeholder="How does sleep affect memory consolidation?"
-                  className="mt-2 min-h-16 w-full resize-none bg-transparent text-center text-xs leading-5 outline-none placeholder:text-muted-foreground sm:min-h-20 sm:text-sm"
+                  placeholder={askMode === "general" ? "Explain transformers like I'm new to ML" : "How does sleep affect memory consolidation?"}
+                  className="mt-2 min-h-12 w-full resize-none bg-transparent text-center text-[11px] leading-5 outline-none placeholder:text-muted-foreground sm:min-h-20 sm:text-sm"
                 />
+
+                <div className="mode-toggle mt-1 flex items-center gap-0.5 rounded-full border border-border bg-background p-0.5" role="radiogroup" aria-label="Assistant mode">
+                  {askModes.map((mode) => {
+                    const ModeIcon = mode.icon;
+                    const selected = askMode === mode.id;
+                    return (
+                      <button
+                        key={mode.id}
+                        type="button"
+                        role="radio"
+                        aria-checked={selected}
+                        title={`${mode.label} — ${mode.hint}`}
+                        onClick={() => chooseAskMode(mode.id)}
+                        className={cn(
+                          "flex items-center gap-1.5 rounded-full px-2 py-1 text-[10px] font-semibold transition-colors sm:px-2.5 sm:text-[11px]",
+                          selected ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-muted",
+                        )}
+                      >
+                        <ModeIcon className="size-3.5 shrink-0" />
+                        <span className="hidden sm:inline">{mode.label}</span>
+                        <span className="sm:hidden">{mode.id === "general" ? "General" : "Research"}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
                 <div className="mt-2 flex items-center gap-2">
-                  <Button asChild type="button" variant="outline" size="icon" className="rounded-full bg-background">
+                  <Button asChild type="button" variant="outline" size="icon" className="size-8 rounded-full bg-background sm:size-9">
                     <Link to="/search" search={{ q: query.trim() || undefined }} aria-label="Open search & discovery" title="Search & discovery"><Search /></Link>
                   </Button>
-                  <Button type="submit" className="rounded-full px-4 shadow-lg" disabled={!query.trim()}><span className="hidden sm:inline">Explore</span><Send /></Button>
+                  {answering ? (
+                    <Button type="button" variant="outline" className="h-8 rounded-full px-3 sm:h-9 sm:px-4" onClick={() => abortRef.current?.abort()}>
+                      <Square className="size-3.5" /><span className="hidden sm:inline">Stop</span>
+                    </Button>
+                  ) : (
+                    <Button type="submit" className="h-8 rounded-full px-3 shadow-lg sm:h-9 sm:px-4" disabled={!query.trim()}>
+                      <span className="hidden sm:inline">{askMode === "general" ? "Ask" : "Explore"}</span><Send />
+                    </Button>
+                  )}
                 </div>
               </form>
             </div>
+
+            {askMode === "general" && (answer || answering || answerError) && (
+              <div className="mt-6 w-full max-w-3xl rounded-lg border border-border bg-card p-4 text-left sm:p-5">
+                <div className="mb-2 flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+                  <Sparkles className="size-3.5" /> General AI answer
+                </div>
+                {answerError ? (
+                  <p className="text-sm text-destructive">{answerError}</p>
+                ) : (
+                  <p className="whitespace-pre-wrap text-sm leading-6">
+                    {answer}
+                    {answering && <span className="ml-0.5 animate-pulse">▍</span>}
+                  </p>
+                )}
+              </div>
+            )}
+
 
             <div className="mt-6 grid w-full max-w-3xl gap-3 sm:mt-4 sm:grid-cols-3">
               {[
