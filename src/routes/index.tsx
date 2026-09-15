@@ -64,6 +64,24 @@ export const Route = createFileRoute("/")({
 
 type Theme = "light" | "dark";
 type EngineMode = "flash" | "pro" | "expert" | "deep" | "journal";
+type AskMode = "general" | "academic";
+
+const ASK_MODE_KEY = "orbis-ask-mode";
+
+const askModes = [
+  {
+    id: "general",
+    label: "General AI",
+    hint: "Chat, code, and writing — no journal search",
+    icon: Sparkles,
+  },
+  {
+    id: "academic",
+    label: "Academic Research",
+    hint: "Search papers, synthesize literature, build citations",
+    icon: GraduationCap,
+  },
+] satisfies Array<{ id: AskMode; label: string; hint: string; icon: typeof Sparkles }>;
 
 const defaultEngine = {
   id: "flash",
