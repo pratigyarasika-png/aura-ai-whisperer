@@ -29,13 +29,15 @@ import {
   Search,
   Send,
   Sparkles,
+  Square,
   Sun,
   WandSparkles,
   X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { streamAssist } from "@/lib/assist-client";
 import { DEFAULT_ACCENT, accentForeground, accentPresets, isHex } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 
