@@ -20,7 +20,7 @@ export type Paper = {
 
 const inputSchema = z.object({
   query: z.string().trim().min(1).max(300),
-  source: z.enum(["openalex", "crossref", "semanticscholar", "pubmed"]).default("openalex"),
+  source: z.enum(["openalex", "crossref", "semanticscholar", "pubmed", "doaj"]).default("openalex"),
   mode: z.enum(["keyword", "doi", "patent", "dataset"]).default("keyword"),
   yearFrom: z.number().int().min(1800).max(2100).default(2000),
   yearTo: z.number().int().min(1800).max(2100).default(new Date().getFullYear()),
