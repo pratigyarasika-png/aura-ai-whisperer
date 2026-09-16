@@ -294,6 +294,47 @@ function SearchDiscovery() {
             ))}
           </div>
 
+          {history.length > 0 && (
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase text-muted-foreground">
+                <History className="size-3.5" /> Recent
+              </span>
+              {history.map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => {
+                    setQuery(item);
+                    rememberQuery(item);
+                    search.mutate({
+                      query: item,
+                      source,
+                      mode,
+                      yearFrom: years[0],
+                      yearTo: years[1],
+                      openAccessOnly: activeFilters.includes("openAccess"),
+                      sort,
+                    });
+                  }}
+                  className="max-w-[14rem] truncate rounded-full bg-muted px-3 py-1 text-[11px] text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                >
+                  {item}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => {
+                  window.localStorage.removeItem(HISTORY_KEY);
+                  setHistory([]);
+                }}
+                className="rounded-full px-2 py-1 text-[11px] text-muted-foreground underline-offset-2 transition-colors hover:text-foreground hover:underline"
+              >
+                Clear
+              </button>
+            </div>
+          )}
+
+
           <div className="mt-6 grid gap-6 border-t border-border pt-6 lg:grid-cols-3">
             <div>
               <p className="flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground">
