@@ -198,7 +198,22 @@
   .hub-action { padding-right: 0.5rem; }
   .hub-action-top { top: 0; }
   .hub-action-bottom { bottom: 0; }
+  .hub-core { padding: 6% !important; }
+  .mode-toggle { width: 100%; justify-content: center; }
 }
+
+/* micro-interactions */
+@keyframes rise-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+.hub-core { transition: box-shadow 220ms ease, border-color 220ms ease; }
+.hub-core:focus-within { border-color: color-mix(in oklab, var(--primary) 55%, transparent); }
+.mode-toggle button { transition: background-color 180ms ease, color 180ms ease, transform 180ms ease; }
+.mode-toggle button:active { transform: scale(0.96); }
+.quick-action { transition: transform 180ms ease, border-color 180ms ease, background-color 180ms ease; }
+.quick-action:hover { transform: translateY(-2px); }
+.quick-action:active { transform: scale(0.99); }
+button, a { -webkit-tap-highlight-color: transparent; }
+.rise-in { animation: rise-in 260ms ease both; }
 
 .document-editor { font-size: 0.95rem; line-height: 1.85; }
 .document-editor h2 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 600; margin: 1.25rem 0 0.5rem; }

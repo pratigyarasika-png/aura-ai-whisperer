@@ -14,6 +14,7 @@ import {
   Github,
   Globe,
   GraduationCap,
+  History,
   Loader2,
   PenLine,
 
@@ -70,7 +71,20 @@ const sources = [
   { id: "crossref", label: "Crossref" },
   { id: "semanticscholar", label: "Semantic Scholar" },
   { id: "pubmed", label: "PubMed" },
+  { id: "doaj", label: "DOAJ (open access)" },
 ] as const;
+
+const HISTORY_KEY = "orbis-search-history";
+
+function loadHistory(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(HISTORY_KEY) ?? "[]");
+    return Array.isArray(parsed) ? (parsed as string[]).slice(0, 8) : [];
+  } catch {
+    return [];
+  }
+}
 
 const indexFilters = [
   { id: "openAccess", label: "Open Access", icon: Unlock },
@@ -104,6 +118,12 @@ const viewers = [
     build: (q: string) => `https://github.com/search?type=repositories&q=${encodeURIComponent(q)}`,
   },
   {
+    id: "researchgate",
+    label: "ResearchGate",
+    icon: BookOpenText,
+    build: (q: string) => `https://www.researchgate.net/search/publication?q=${encodeURIComponent(q)}`,
+  },
+  {
     id: "web",
     label: "Google Web",
     icon: Globe,
@@ -121,6 +141,15 @@ function SearchDiscovery() {
   const [activeFilters, setActiveFilters] = useState<IndexFilterId[]>([]);
   const [sort, setSort] = useState<SortId>("relevance");
   const [viewer, setViewer] = useState<(typeof viewers)[number]["id"]>("scholar");
+  const [history, setHistory] = useState<string[]>([]);
+
+  const rememberQuery = (value: string) => {
+    setHistory((current) => {
+      const next = [value, ...current.filter((item) => item !== value)].slice(0, 8);
+      window.localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
+      return next;
+    });
+  };
 
   const search = useMutation({
     mutationFn: (vars: {
@@ -140,6 +169,7 @@ function SearchDiscovery() {
   const submit = (event?: React.FormEvent) => {
     event?.preventDefault();
     if (!query.trim()) return;
+    rememberQuery(query.trim());
     search.mutate({
       query: query.trim(),
       source,
@@ -155,6 +185,7 @@ function SearchDiscovery() {
   const autoRan = useRef(false);
   useEffect(() => {
     applySavedAppearance();
+    setHistory(loadHistory());
   }, []);
 
 
@@ -264,6 +295,47 @@ function SearchDiscovery() {
             ))}
           </div>
 
+          {history.length > 0 && (
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase text-muted-foreground">
+                <History className="size-3.5" /> Recent
+              </span>
+              {history.map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => {
+                    setQuery(item);
+                    rememberQuery(item);
+                    search.mutate({
+                      query: item,
+                      source,
+                      mode,
+                      yearFrom: years[0],
+                      yearTo: years[1],
+                      openAccessOnly: activeFilters.includes("openAccess"),
+                      sort,
+                    });
+                  }}
+                  className="max-w-[14rem] truncate rounded-full bg-muted px-3 py-1 text-[11px] text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                >
+                  {item}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => {
+                  window.localStorage.removeItem(HISTORY_KEY);
+                  setHistory([]);
+                }}
+                className="rounded-full px-2 py-1 text-[11px] text-muted-foreground underline-offset-2 transition-colors hover:text-foreground hover:underline"
+              >
+                Clear
+              </button>
+            </div>
+          )}
+
+
           <div className="mt-6 grid gap-6 border-t border-border pt-6 lg:grid-cols-3">
             <div>
               <p className="flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground">
@@ -350,7 +422,7 @@ function SearchDiscovery() {
             </div>
             <Button asChild variant="outline" className="rounded-full">
               <a href={viewerUrl} target="_blank" rel="noreferrer">
-                Launch <ArrowUpRight />
+                Launch {activeViewer.label} <ArrowUpRight />
               </a>
             </Button>
           </div>
@@ -377,9 +449,11 @@ function SearchDiscovery() {
           )}
 
           {!search.isPending && !search.data && (
-            <p className="rounded-3xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-              Search a topic, paste a DOI, or look for a dataset to see results here.
-            </p>
+            <div className="rise-in flex flex-col items-center gap-3 rounded-3xl border border-dashed border-border p-10 text-center">
+              <span className="grid size-12 place-items-center rounded-full bg-secondary text-secondary-foreground"><BookOpenText className="size-5" /></span>
+              <p className="text-sm font-medium">Nothing searched yet</p>
+              <p className="max-w-sm text-xs text-muted-foreground">Search a topic, paste a DOI, or look for a dataset. Results appear here with abstracts, DOIs and open-access PDFs.</p>
+            </div>
           )}
 
           <div className="grid gap-4">

@@ -20,7 +20,7 @@ export type Paper = {
 
 const inputSchema = z.object({
   query: z.string().trim().min(1).max(300),
-  source: z.enum(["openalex", "crossref", "semanticscholar", "pubmed"]).default("openalex"),
+  source: z.enum(["openalex", "crossref", "semanticscholar", "pubmed", "doaj"]).default("openalex"),
   mode: z.enum(["keyword", "doi", "patent", "dataset"]).default("keyword"),
   yearFrom: z.number().int().min(1800).max(2100).default(2000),
   yearTo: z.number().int().min(1800).max(2100).default(new Date().getFullYear()),
@@ -211,6 +211,39 @@ async function searchPubMed(i: z.infer<typeof inputSchema>): Promise<Paper[]> {
     });
 }
 
+/** DOAJ API v2 — open-access journal articles only. */
+async function searchDoaj(i: z.infer<typeof inputSchema>): Promise<Paper[]> {
+  const bare = i.query.replace(/^https?:\/\/doi\.org\//i, "");
+  const term =
+    i.mode === "doi"
+      ? `doi:"${bare}"`
+      : `${i.query} AND year:[${i.yearFrom} TO ${i.yearTo}]`;
+  const data = await getJson(
+    `https://doaj.org/api/v2/search/articles/${encodeURIComponent(term)}?pageSize=25`,
+  );
+  return (data.results ?? []).map((item: any): Paper => {
+    const bib = item.bibjson ?? {};
+    const doi = (bib.identifier ?? []).find((id: any) => id.type === "doi")?.value ?? null;
+    const fulltext = (bib.link ?? []).find((l: any) => l.type === "fulltext")?.url ?? null;
+    return {
+      id: `doaj-${item.id}`,
+      title: clean(bib.title) ?? "Untitled",
+      abstract: clean(bib.abstract),
+      authors: (bib.author ?? []).slice(0, 8).map((a: any) => a.name).filter(Boolean),
+      year: bib.year ? Number(bib.year) || null : null,
+      venue: bib.journal?.title ?? null,
+      doi,
+      citations: 0,
+      openAccess: true,
+      pdfUrl: fulltext,
+      landingUrl: fulltext ?? (doi ? `https://doi.org/${doi}` : null),
+      source: "DOAJ",
+      type: "article",
+      indexedIn: ["doaj"],
+    };
+  });
+}
+
 export const searchPapers = createServerFn({ method: "GET" })
   .inputValidator((data: unknown) => inputSchema.parse(data))
   .handler(async ({ data }): Promise<{ papers: Paper[]; notice: string | null }> => {
@@ -219,8 +252,12 @@ export const searchPapers = createServerFn({ method: "GET" })
       crossref: searchCrossref,
       semanticscholar: searchSemanticScholar,
       pubmed: searchPubMed,
+      doaj: searchDoaj,
     } as const;
-    const order = [data.source, ...(["openalex", "crossref", "semanticscholar", "pubmed"] as const).filter((s) => s !== data.source)];
+    const order = [
+      data.source,
+      ...(["openalex", "semanticscholar", "crossref", "doaj", "pubmed"] as const).filter((s) => s !== data.source),
+    ];
 
     try {
       let papers: Paper[] = [];

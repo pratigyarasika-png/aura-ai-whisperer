@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Bold,
   BookOpenText,
+  CheckCircle2,
   ChevronLeft,
   CircleStop,
   Copy,
@@ -110,6 +111,8 @@ function WritingWorkspace() {
   const [chatQuestion, setChatQuestion] = useState("");
   const [toolbar, setToolbar] = useState<{ top: number; left: number } | null>(null);
   const [aiOpen, setAiOpen] = useState(false);
+  const [saveState, setSaveState] = useState<"saved" | "unsaved">("saved");
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     applySavedAppearance();
@@ -148,8 +151,18 @@ function WritingWorkspace() {
       if (paper) marker.textContent = formatInline(paper, style, order.indexOf(id) + 1);
     }
     setCitedIds(order);
-    window.localStorage.setItem(DOC_KEY, editor.innerHTML);
+
+    setSaveState("unsaved");
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      window.localStorage.setItem(DOC_KEY, editor.innerHTML);
+      setSaveState("saved");
+    }, 600);
   }, [library, style]);
+
+  useEffect(() => () => {
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+  }, []);
 
   useEffect(() => {
     if (ready) syncCitations();
@@ -790,8 +803,22 @@ function WritingWorkspace() {
             >
               <Sigma /> Equations
             </Button>
-            <span className="ml-auto hidden text-[11px] text-muted-foreground sm:inline">
-              Draft saved on this device
+            <span
+              aria-live="polite"
+              className={cn(
+                "ml-auto flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium transition-colors",
+                saveState === "saved" ? "text-muted-foreground" : "bg-secondary text-secondary-foreground",
+              )}
+            >
+              {saveState === "saved" ? (
+                <>
+                  <CheckCircle2 className="size-3.5 text-primary" /> Saved to local storage
+                </>
+              ) : (
+                <>
+                  <Loader2 className="size-3.5 animate-spin" /> Unsaved changes
+                </>
+              )}
             </span>
           </div>
 
