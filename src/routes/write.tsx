@@ -150,8 +150,18 @@ function WritingWorkspace() {
       if (paper) marker.textContent = formatInline(paper, style, order.indexOf(id) + 1);
     }
     setCitedIds(order);
-    window.localStorage.setItem(DOC_KEY, editor.innerHTML);
+
+    setSaveState("unsaved");
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      window.localStorage.setItem(DOC_KEY, editor.innerHTML);
+      setSaveState("saved");
+    }, 600);
   }, [library, style]);
+
+  useEffect(() => () => {
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+  }, []);
 
   useEffect(() => {
     if (ready) syncCitations();
