@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Bold,
   BookOpenText,
+  CheckCircle2,
   ChevronLeft,
   CircleStop,
   Copy,
