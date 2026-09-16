@@ -168,6 +168,7 @@ function SearchDiscovery() {
   const submit = (event?: React.FormEvent) => {
     event?.preventDefault();
     if (!query.trim()) return;
+    rememberQuery(query.trim());
     search.mutate({
       query: query.trim(),
       source,
