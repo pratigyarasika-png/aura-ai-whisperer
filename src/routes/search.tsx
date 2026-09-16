@@ -422,7 +422,7 @@ function SearchDiscovery() {
             </div>
             <Button asChild variant="outline" className="rounded-full">
               <a href={viewerUrl} target="_blank" rel="noreferrer">
-                Launch <ArrowUpRight />
+                Launch {activeViewer.label} <ArrowUpRight />
               </a>
             </Button>
           </div>
