@@ -638,7 +638,7 @@ function ResearchWorkspace() {
             </div>
 
             {askMode === "general" && (answer || answering || answerError) && (
-              <div className="mt-6 w-full max-w-3xl rounded-lg border border-border bg-card p-4 text-left sm:p-5">
+              <div className="rise-in mt-6 w-full max-w-3xl rounded-lg border border-border bg-card p-4 text-left sm:p-5">
                 <div className="mb-2 flex items-center gap-2 text-xs font-semibold text-muted-foreground">
                   <Sparkles className="size-3.5" /> General AI answer
                 </div>

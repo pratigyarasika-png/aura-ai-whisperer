@@ -449,9 +449,11 @@ function SearchDiscovery() {
           )}
 
           {!search.isPending && !search.data && (
-            <p className="rounded-3xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-              Search a topic, paste a DOI, or look for a dataset to see results here.
-            </p>
+            <div className="rise-in flex flex-col items-center gap-3 rounded-3xl border border-dashed border-border p-10 text-center">
+              <span className="grid size-12 place-items-center rounded-full bg-secondary text-secondary-foreground"><BookOpenText className="size-5" /></span>
+              <p className="text-sm font-medium">Nothing searched yet</p>
+              <p className="max-w-sm text-xs text-muted-foreground">Search a topic, paste a DOI, or look for a dataset. Results appear here with abstracts, DOIs and open-access PDFs.</p>
+            </div>
           )}
 
           <div className="grid gap-4">
