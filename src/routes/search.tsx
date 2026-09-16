@@ -70,7 +70,20 @@ const sources = [
   { id: "crossref", label: "Crossref" },
   { id: "semanticscholar", label: "Semantic Scholar" },
   { id: "pubmed", label: "PubMed" },
+  { id: "doaj", label: "DOAJ (open access)" },
 ] as const;
+
+const HISTORY_KEY = "orbis-search-history";
+
+function loadHistory(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(HISTORY_KEY) ?? "[]");
+    return Array.isArray(parsed) ? (parsed as string[]).slice(0, 8) : [];
+  } catch {
+    return [];
+  }
+}
 
 const indexFilters = [
   { id: "openAccess", label: "Open Access", icon: Unlock },
