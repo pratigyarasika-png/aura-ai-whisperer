@@ -140,6 +140,15 @@ function SearchDiscovery() {
   const [activeFilters, setActiveFilters] = useState<IndexFilterId[]>([]);
   const [sort, setSort] = useState<SortId>("relevance");
   const [viewer, setViewer] = useState<(typeof viewers)[number]["id"]>("scholar");
+  const [history, setHistory] = useState<string[]>([]);
+
+  const rememberQuery = (value: string) => {
+    setHistory((current) => {
+      const next = [value, ...current.filter((item) => item !== value)].slice(0, 8);
+      window.localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
+      return next;
+    });
+  };
 
   const search = useMutation({
     mutationFn: (vars: {
