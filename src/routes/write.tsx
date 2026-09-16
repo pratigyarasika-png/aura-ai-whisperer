@@ -110,6 +110,8 @@ function WritingWorkspace() {
   const [chatQuestion, setChatQuestion] = useState("");
   const [toolbar, setToolbar] = useState<{ top: number; left: number } | null>(null);
   const [aiOpen, setAiOpen] = useState(false);
+  const [saveState, setSaveState] = useState<"saved" | "unsaved">("saved");
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     applySavedAppearance();
