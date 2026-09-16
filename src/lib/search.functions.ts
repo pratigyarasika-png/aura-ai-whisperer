@@ -252,8 +252,12 @@ export const searchPapers = createServerFn({ method: "GET" })
       crossref: searchCrossref,
       semanticscholar: searchSemanticScholar,
       pubmed: searchPubMed,
+      doaj: searchDoaj,
     } as const;
-    const order = [data.source, ...(["openalex", "crossref", "semanticscholar", "pubmed"] as const).filter((s) => s !== data.source)];
+    const order = [
+      data.source,
+      ...(["openalex", "semanticscholar", "crossref", "doaj", "pubmed"] as const).filter((s) => s !== data.source),
+    ];
 
     try {
       let papers: Paper[] = [];
