@@ -802,8 +802,22 @@ function WritingWorkspace() {
             >
               <Sigma /> Equations
             </Button>
-            <span className="ml-auto hidden text-[11px] text-muted-foreground sm:inline">
-              Draft saved on this device
+            <span
+              aria-live="polite"
+              className={cn(
+                "ml-auto flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium transition-colors",
+                saveState === "saved" ? "text-muted-foreground" : "bg-secondary text-secondary-foreground",
+              )}
+            >
+              {saveState === "saved" ? (
+                <>
+                  <CheckCircle2 className="size-3.5 text-primary" /> Saved to local storage
+                </>
+              ) : (
+                <>
+                  <Loader2 className="size-3.5 animate-spin" /> Unsaved changes
+                </>
+              )}
             </span>
           </div>
 
