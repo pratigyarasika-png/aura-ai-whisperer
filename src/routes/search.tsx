@@ -117,6 +117,12 @@ const viewers = [
     build: (q: string) => `https://github.com/search?type=repositories&q=${encodeURIComponent(q)}`,
   },
   {
+    id: "researchgate",
+    label: "ResearchGate",
+    icon: BookOpenText,
+    build: (q: string) => `https://www.researchgate.net/search/publication?q=${encodeURIComponent(q)}`,
+  },
+  {
     id: "web",
     label: "Google Web",
     icon: Globe,
