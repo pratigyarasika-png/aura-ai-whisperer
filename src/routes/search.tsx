@@ -184,6 +184,7 @@ function SearchDiscovery() {
   const autoRan = useRef(false);
   useEffect(() => {
     applySavedAppearance();
+    setHistory(loadHistory());
   }, []);
 
 
